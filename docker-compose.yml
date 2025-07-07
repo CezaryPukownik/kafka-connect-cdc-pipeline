@@ -78,6 +78,16 @@ services:
         chmod +x /scripts/init-connectors.sh &&
         /scripts/init-connectors.sh
       "
+  #
+  # CLICKHOUSE TARGET DWH
+  #
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    ports: [9000:9000, 8123:8123]
+    environment:
+      CLICKHOUSE_PASSWORD: mysecretpassword
+    volumes: [./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql]
 volumes:
   kafka_data:
     driver: local
