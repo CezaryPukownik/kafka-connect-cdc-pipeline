@@ -1,13 +1,31 @@
 ---
-version: '3.8'
 services:
+  #
+  # KAFKA CONNECT
+  #
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports: [5432:5432]
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+    volumes:
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: |
+      postgres 
+      -c wal_level=logical
+      -c max_wal_senders=1
+      -c max_replication_slots=1
+  #
+  # KAFKA BROKER
+  # 
   kafka:
     image: apache/kafka:latest
     container_name: kafka
-    # FIX 1: Run the container as the root user to solve the volume permission issue.
     user: root
-    ports: [9092:9092]
-    volumes: [kafka_data:/tmp/kafka-logs]
+    ports: [9092:9092, 9093:9093]
+    # volumes: [kafka_data:/tmp/kafka-logs]
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -21,20 +39,35 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       CLUSTER_ID: ciWo7IWazngRchmPES6q5A
+  #
+  # KAFKA CONNECT
+  #
   connect:
-    image: apache/kafka:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.connect
     container_name: connect
     ports: [8083:8083]
-    volumes:
-      - ./data:/data
-      - ./scripts:/scripts
-      # FIX 2: Mount the new properties file to configure the worker correctly.
-      - ./connect/connect-distributed.properties:/opt/kafka/config/connect-distributed.properties
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:29092
+      CONNECT_REST_PORT: 8082
+      CONNECT_GROUP_ID: '1'
+      CONNECT_CONFIG_STORAGE_TOPIC: config
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
     depends_on:
       - kafka
-    # FIX 2: Removed the non-functional 'environment' block and replaced the
-    # command with the correct script and path to the properties file.
-    command: /opt/kafka/bin/connect-distributed.sh /opt/kafka/config/connect-distributed.properties
+  #
+  # INIT CONNECTORS
+  #
   init-connectors:
     image: curlimages/curl:latest
     container_name: init-connectors

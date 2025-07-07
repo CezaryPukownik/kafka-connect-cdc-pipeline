@@ -9,15 +9,12 @@ done
 echo -e "\nKafka Connect is up and running!"
 
 # Delete the connectors if exists already
-curl -X DELETE http://connect:8083/connectors/debezium-postgres-source-connector
-curl -X DELETE http://connect:8083/connectors/json-file-sink-connector
+curl -X DELETE http://connect:8083/connectors/shop-connector
 
 # Create a postgres debezium connector
-echo "Creating FileStreamSourceConnector..."
-curl -X POST -H "Content-Type: application/json" --data @/scripts/debezium-postgres-source-connector.json http://connect:8083/connectors
-
-# Create a sink connector (to file)
-echo "Creating FileStreamSinkConnector..."
-curl -X POST -H "Content-Type: application/json" --data @/scripts/sink-connector.json http://connect:8083/connectors
+echo "Creating io.debezium.connector.postgresql.PostgresConnector..."
+curl -X POST -H "Content-Type: application/json" \
+  --data @/scripts/shop-connector.json \
+  http://connect:8083/connectors
 
 echo "Connectors configured successfully."

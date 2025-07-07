@@ -15,4 +15,5 @@ tail -f data/sink.txt
 ### Investigae the topic messages
 kcat -b localhost:9092 -t file-stream-topic -P
 
-
+Source for debezium:
+https://www.redpanda.com/blog/change-data-capture-postgres-debezium-kafka-connect
