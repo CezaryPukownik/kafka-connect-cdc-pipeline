@@ -1,0 +1,23 @@
+{
+  "name": "clickhouse-connector",
+  "config": {
+    "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+    "tasks.max": "1",
+    "topics": "shop.public.customer_addresses",
+    "topic2TableMap": "shop.public.customer_addresses=cdc__shop__customer_addresses",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "true",
+    "hostname": "clickhouse",
+    "port": "8123",
+    "username": "default",
+    "password": "mysecretpassword",
+    "database": "shop",
+    "ssl": "false",
+    "errors.tolerance": "all",
+    "errors.log.enable": "true",
+    "errors.log.include.messages": "true",
+    "consumer.override.max.poll.records": "5000",
+    "consumer.override.max.partition.fetch.bytes": "5242880"
+  }
+}

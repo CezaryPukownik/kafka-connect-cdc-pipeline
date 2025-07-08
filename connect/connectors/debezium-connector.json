@@ -1,0 +1,19 @@
+{
+  "name": "debezium-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "plugin.name": "pgoutput",
+    "tasks.max": "1",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "mysecretpassword",
+    "database.dbname": "shop",
+    "schema.include.list": "public",
+    "database.server.name": "shop-server",
+    "topic.prefix": "shop",
+    "transforms": "flatten",
+    "transforms.flatten.type": "org.apache.kafka.connect.transforms.Flatten$Value",
+    "transforms.flatten.delimiter": "_"
+  }
+}
