@@ -1,7 +1,7 @@
 ---
 services:
   #
-  # KAFKA CONNECT
+  # POSTGRESQL SOURCE DB
   #
   postgres:
     image: postgres:latest
@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
     volumes:
       - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/postgresql_init.sql:/docker-entrypoint-initdb.d/init.sql
     command: |
       postgres 
       -c wal_level=logical
@@ -19,7 +19,7 @@ services:
       -c max_replication_slots=1
   #
   # KAFKA BROKER
-  # 
+  #
   kafka:
     image: apache/kafka:latest
     container_name: kafka
@@ -50,7 +50,7 @@ services:
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka:29092
       CONNECT_REST_PORT: 8082
-      CONNECT_GROUP_ID: '1'
+      CONNECT_GROUP_ID: "1"
       CONNECT_CONFIG_STORAGE_TOPIC: config
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_OFFSET_STORAGE_TOPIC: offsets
@@ -87,67 +87,5 @@ services:
     ports: [9000:9000, 8123:8123]
     environment:
       CLICKHOUSE_PASSWORD: mysecretpassword
-    volumes: [./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql]
-  # spark-iceberg:
-  #   image: tabulario/spark-iceberg
-  #   container_name: spark-iceberg
-  #   build: spark/
-  #   networks:
-  #     iceberg_net:
-  #   depends_on: [rest, minio]
-  #   volumes:
-  #     - ./warehouse:/home/iceberg/warehouse
-  #     - ./notebooks:/home/iceberg/notebooks/notebooks
-  #   environment:
-  #     - AWS_ACCESS_KEY_ID=admin
-  #     - AWS_SECRET_ACCESS_KEY=password
-  #     - AWS_REGION=us-east-1
-  #   ports: [8888:8888, 8080:8080, 10000:10000, 10001:10001]
-  # rest:
-  #   image: apache/iceberg-rest-fixture
-  #   container_name: iceberg-rest
-  #   networks:
-  #     iceberg_net:
-  #   ports: [8181:8181]
-  #   environment:
-  #     - AWS_ACCESS_KEY_ID=admin
-  #     - AWS_SECRET_ACCESS_KEY=password
-  #     - AWS_REGION=us-east-1
-  #     - CATALOG_WAREHOUSE=s3://warehouse/
-  #     - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
-  #     - CATALOG_S3_ENDPOINT=http://minio:9000
-  # minio:
-  #   image: minio/minio
-  #   container_name: minio
-  #   environment:
-  #     - MINIO_ROOT_USER=admin
-  #     - MINIO_ROOT_PASSWORD=password
-  #     - MINIO_DOMAIN=minio
-  #   networks:
-  #     iceberg_net:
-  #       aliases: [warehouse.minio]
-  #   ports: [9001:9001, 9000:9000]
-  #   command: [server, /data, --console-address, :9001]
-  # mc:
-  #   depends_on: [minio]
-  #   image: minio/mc
-  #   container_name: mc
-  #   networks:
-  #     iceberg_net:
-  #   environment:
-  #     - AWS_ACCESS_KEY_ID=admin
-  #     - AWS_SECRET_ACCESS_KEY=password
-  #     - AWS_REGION=us-east-1
-  #   entrypoint: |
-  #     /bin/sh -c "
-  #     until (/usr/bin/mc alias set minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
-  #     /usr/bin/mc rm -r --force minio/warehouse;
-  #     /usr/bin/mc mb minio/warehouse;
-  #     /usr/bin/mc policy set public minio/warehouse;
-  #     tail -f /dev/null
-  #     "
-# networks:
-#   iceberg_net:
-# volumes:
-#   kafka_data:
-#     driver: local
+    volumes:
+      [./clickhouse/clickhouse_init.sql:/docker-entrypoint-initdb.d/init.sql]
