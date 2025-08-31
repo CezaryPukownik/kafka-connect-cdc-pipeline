@@ -37,7 +37,7 @@ The entire pipeline runs in a set of Docker containers defined in the `docker-co
 1. **Clone the repository:**
 
 ```
-git clone [https://github.com/CezaryPukownik/kafka-connect-cdc-pipeline.git](https://github.com/CezaryPukownik/kafka-connect-cdc-pipeline.git)
+git clone https://github.com/CezaryPukownik/kafka-connect-cdc-pipeline
 cd kafka-connect-cdc-pipeline
 ```
 
